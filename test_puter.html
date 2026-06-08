@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puter.js Image Generation Test</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+        body {
+            background-color: #0b0c10;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #66fcf1;
+        }
+        textarea {
+            width: 80%;
+            max-width: 600px;
+            height: 100px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #45f3ff;
+            background-color: #1f2833;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #66fcf1;
+            color: #0b0c10;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: #45f3ff;
+            box-shadow: 0 0 15px #45f3ff;
+        }
+        #output {
+            margin-top: 30px;
+            max-width: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.3);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Puter Image Generation</h1>
+    <textarea id="prompt">A futuristic robot holding a glowing blue energy orb, digital art, cyberpunk style</textarea>
+    <br>
+    <button id="generateBtn">Generate Image</button>
+
+    <div id="output">
+        <p id="status"></p>
+    </div>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt').value;
+            const status = document.getElementById('status');
+            const output = document.getElementById('output');
+            
+            // Clean previous image
+            const existingImg = output.querySelector('img');
+            if (existingImg) existingImg.remove();
+
+            status.innerText = "Synthesizing image with Puter.js...";
+
+            try {
+                console.log("Calling puter.ai.txt2img with prompt:", prompt);
+                // Call Puter.js text-to-image
+                const imageElement = await puter.ai.txt2img(prompt);
+                
+                status.innerText = "Success! Image generated:";
+                output.appendChild(imageElement);
+            } catch (err) {
+                console.error("Puter Error:", err);
+                status.innerText = "Error: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMNIAI - Quantum Multi-Vendor OS Login</title>
+  <!-- Tailwind CSS & AlpineJS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['Orbitron', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --background: #030014;
+      --accent-cyan: #00d1ff;
+      --accent-purple: #8B5CF6;
+      --accent-pink: #ec4899;
+      --accent-emerald: #10b981;
+    }
+    
+    body {
+      background-color: var(--background);
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+    }
+
+    .cyber-grid {
+      background-size: 50px 50px;
+      background-image: 
+        linear-gradient(to right, rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+    }
+
+    .glass-panel {
+      background: rgba(10, 8, 28, 0.7);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 24px 64px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #00d1ff 0%, #8B5CF6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .glow-bg-1 {
+      position: absolute;
+      top: -20%;
+      left: -20%;
+      width: 60%;
+      height: 60%;
+      background: rgba(139, 92, 246, 0.15);
+      filter: blur(160px);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .glow-bg-2 {
+      position: absolute;
+      bottom: -20%;
+      right: -20%;
+      width: 60%;
+      height: 60%;
+      background: rgba(0, 209, 255, 0.1);
+      filter: blur(160px);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .role-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Light Mode Overrides */
+    .light-mode {
+      --background: #f1f5f9;
+      color: #0f172a !important;
+    }
+    .light-mode.cyber-grid, .light-mode .cyber-grid {
+      background-image: 
+        linear-gradient(to right, rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+    }
+    .light-mode .glass-panel {
+      background: rgba(255, 255, 255, 0.7) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.04) !important;
+      backdrop-filter: blur(20px) saturate(180%) !important;
+    }
+    .light-mode .bg-black\/40 {
+      background-color: rgba(0, 0, 0, 0.03) !important;
+    }
+    .light-mode .bg-black\/60 {
+      background-color: rgba(255, 255, 255, 0.85) !important;
+      border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    .light-mode .text-white {
+      color: #0f172a !important;
+    }
+    .light-mode .text-white\/80 {
+      color: #1e293b !important;
+    }
+    .light-mode .text-white\/70 {
+      color: #334155 !important;
+    }
+    .light-mode .text-white\/60 {
+      color: #475569 !important;
+    }
+    .light-mode .text-white\/50 {
+      color: #64748b !important;
+    }
+    .light-mode .text-white\/40 {
+      color: #94a3b8 !important;
+    }
+    .light-mode .text-white\/30 {
+      color: #cbd5e1 !important;
+    }
+    .light-mode .text-white\/20 {
+      color: #e2e8f0 !important;
+    }
+    .light-mode .text-white\/10 {
+      color: rgba(0, 0, 0, 0.06) !important;
+    }
+    .light-mode input, .light-mode textarea, .light-mode select {
+      background-color: rgba(0, 0, 0, 0.03) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      color: #0f172a !important;
+    }
+    .light-mode input::placeholder, .light-mode textarea::placeholder {
+      color: #94a3b8 !important;
+    }
+    .light-mode input:focus, .light-mode textarea:focus, .light-mode select:focus {
+      border-color: var(--accent-cyan) !important;
+    }
+    .light-mode .glow-bg-1 {
+      background: rgba(139, 92, 246, 0.04) !important;
+    }
+    .light-mode .glow-bg-2 {
+      background: rgba(0, 209, 255, 0.04) !important;
+    }
+    .light-mode .border-white\/5 {
+      border-color: rgba(0, 0, 0, 0.06) !important;
+    }
+    .light-mode .border-white\/10 {
+      border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    .light-mode .border-white\/15 {
+      border-color: rgba(0, 0, 0, 0.1) !important;
+    }
+    .light-mode .bg-white\/5 {
+      background-color: rgba(0, 0, 0, 0.02) !important;
+    }
+    .light-mode .bg-white\/10 {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+    }
+    .light-mode .role-btn.text-white\/30 {
+      color: #94a3b8 !important;
+    }
+    .light-mode .role-btn.text-white\/30:hover {
+      color: #475569 !important;
+    }
+  </style>
+</head>
+<body class="cyber-grid min-h-screen relative flex items-center justify-center p-4 select-none"
+      :class="theme === 'light' ? 'light-mode' : ''"
+      x-data="{
+        theme: localStorage.getItem('omniai_theme') || 'dark',
+        toggleTheme() {
+          this.theme = this.theme === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('omniai_theme', this.theme);
+          setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
+        },
+        isFileProtocol: window.location.protocol === 'file:',
+        selectedRole: 'seller', // seller, hotel, restaurant, admin
+        email: '',
+        password: '',
+        isLoading: false,
+        authStep: 'login',
+        loadingPercent: 0,
+        loadingStep: 'Initializing neural link...',
+        errorMessage: '',
+        
+        getRoleColor() {
+          if (this.selectedRole === 'seller') return 'rgba(0, 209, 255, 0.2)';
+          if (this.selectedRole === 'hotel') return 'rgba(139, 92, 246, 0.2)';
+          if (this.selectedRole === 'restaurant') return 'rgba(236, 72, 153, 0.2)';
+          return 'rgba(16, 185, 129, 0.2)';
+        },
+        getRoleBorder() {
+          if (this.selectedRole === 'seller') return 'border-[var(--accent-cyan)]/40';
+          if (this.selectedRole === 'hotel') return 'border-[var(--accent-purple)]/40';
+          if (this.selectedRole === 'restaurant') return 'border-[var(--accent-pink)]/40';
+          return 'border-[var(--accent-emerald)]/40';
+        },
+        getRoleShadow() {
+          if (this.selectedRole === 'seller') return 'shadow-[0_0_30px_rgba(0,209,255,0.15)]';
+          if (this.selectedRole === 'hotel') return 'shadow-[0_0_30px_rgba(139,92,246,0.15)]';
+          if (this.selectedRole === 'restaurant') return 'shadow-[0_0_30px_rgba(236,72,153,0.15)]';
+          return 'shadow-[0_0_30px_rgba(16,185,129,0.15)]';
+        },
+        
+        executeAuthentication() {
+          this.errorMessage = '';
+          if (!this.email || !this.password) return;
+          
+          // Enforce 10 specific high-level passwords
+          const authorizedPasswords = [
+            'Quantum#Nexus_98x!Alpha',
+            'Secure#Core_77z*Omega',
+            'OmniSecure_99y#Cyber',
+            'Matrix#Guard_12a!Node',
+            'Cipher#Uplink_33b*Vault',
+            'Sentinel_88c#Vector',
+            'Neural#Shield_44d!Gate',
+            'Vector#Access_55e*Crypt',
+            'Synapse#Lock_22f!Pulse',
+            'Entropy#Block_66g*Zenith'
+          ];
+          
+          if (!authorizedPasswords.includes(this.password)) {
+            this.errorMessage = 'Access Denied: Invalid Cryptographic Access Key';
+            try {
+              const synth = window.speechSynthesis;
+              const utter = new SpeechSynthesisUtterance('Access denied. Invalid access key.');
+              utter.pitch = 0.8;
+              utter.rate = 1.0;
+              synth.speak(utter);
+            } catch(e){}
+            setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
+            return;
+          }
+
+          this.isLoading = true;
+          this.loadingPercent = 0;
+          this.loadingStep = 'Connecting to Supabase nodes...';
+          
+          let speakMsg = 'Authenticating OMNIAI ' + this.selectedRole + ' profile. Initiating quantum handshake.';
+          try {
+            const synth = window.speechSynthesis;
+            const utter = new SpeechSynthesisUtterance(speakMsg);
+            utter.pitch = 1.2;
+            utter.rate = 1.1;
+            synth.speak(utter);
+          } catch(e){}
+
+          let timer = setInterval(() => {
+            this.loadingPercent += 20;
+            if (this.loadingPercent === 20) this.loadingStep = 'Verifying cryptographic handshake keys...';
+            if (this.loadingPercent === 40) this.loadingStep = 'Querying distributed role database...';
+            if (this.loadingPercent === 60) this.loadingStep = 'Opening secure OMNIAI session wrapper...';
+            if (this.loadingPercent === 80) this.loadingStep = 'Uplink stable. Granting dashboard authority...';
+            if (this.loadingPercent >= 100) {
+              clearInterval(timer);
+              localStorage.setItem('omniai_current_user', JSON.stringify({ name: 'System Operator', email: this.email, role: this.selectedRole }));
+              window.location.href = 'dashboard.html?role=' + this.selectedRole;
+            }
+          }, 350);
+        }
+      }">
+
+  <!-- Background Blur Spots -->
+  <div class="glow-bg-1"></div>
+  <div class="glow-bg-2"></div>
+
+  <!-- De-Synchronized Origin Warning Notice -->
+  <div x-show="isFileProtocol" class="fixed top-0 left-0 right-0 bg-gradient-to-r from-amber-500/20 to-red-500/20 border-b border-red-500/30 px-6 py-4.5 text-center flex items-center justify-center gap-3 z-[9999] text-[10px] uppercase font-mono tracking-wider text-red-300 backdrop-blur-md">
+    <i data-lucide="alert-triangle" class="w-4.5 h-4.5 text-red-400 animate-pulse"></i>
+    <span>De-Synchronized Workspace: You opened the Admin Panel via file://. Please use <a href="http://localhost:3000/admin/index.html" class="underline text-white font-bold hover:text-[var(--accent-cyan)] transition-colors">http://localhost:3000/admin/index.html</a> to enable Real-Time User Panel sync!</span>
+  </div>
+
+  <!-- Loading Overlay -->
+  <template x-if="isLoading">
+    <div class="fixed inset-0 z-[9999] backdrop-blur-md bg-black/60 flex items-center justify-center p-6">
+      <div class="glass-panel max-w-sm w-full p-8 rounded-3xl border-white/10 text-center relative overflow-hidden"
+           :class="getRoleBorder() + ' ' + getRoleShadow()">
+        <div class="absolute top-0 left-0 h-1 bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-purple)] transition-all duration-300" :style="'width: ' + loadingPercent + '%'"></div>
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-white/5 border border-white/10">
+          <i data-lucide="refresh-cw" class="w-6 h-6 text-white/40 animate-spin"></i>
+        </div>
+        <h3 class="text-sm font-black uppercase tracking-widest text-white mb-2">Neural Security Uplink</h3>
+        <p class="text-[10px] text-white/40 mb-6 font-mono h-4" x-text="loadingStep"></p>
+        
+        <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden mb-3">
+          <div class="h-full transition-all duration-300"
+               :class="{
+                 'bg-[var(--accent-cyan)]': selectedRole === 'seller',
+                 'bg-[var(--accent-purple)]': selectedRole === 'hotel',
+                 'bg-[var(--accent-pink)]': selectedRole === 'restaurant',
+                 'bg-[var(--accent-emerald)]': selectedRole === 'admin'
+               }"
+               :style="'width: ' + loadingPercent + '%'"></div>
+        </div>
+        <div class="text-[9px] font-mono font-black uppercase tracking-widest text-white/40" x-text="loadingPercent + '% SYNCED'"></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Login Main Panel -->
+  <div class="max-w-md w-full relative z-10 animate-in fade-in zoom-in duration-500">
+    <div class="glass-panel p-8 md:p-10 rounded-[2.5rem] border-white/5 relative overflow-hidden flex flex-col items-center"
+         :class="getRoleBorder() + ' ' + getRoleShadow()">
+      
+      <!-- Top Branding -->
+      <div class="text-center space-y-3 mb-8">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.02] border border-white/5 mb-2">
+          <i data-lucide="shield" class="w-3.5 h-3.5 text-[var(--accent-cyan)]"></i>
+          <span class="text-[8px] font-black uppercase tracking-[0.25em] text-white/50">OMNIAI Secure Authority</span>
+        </div>
+        <h1 class="text-3xl font-black tracking-tighter text-white uppercase leading-none">
+          OmniAdmin Panel<span class="text-[var(--accent-cyan)]">.</span>
+        </h1>
+        <p class="text-[10px] text-white/40 uppercase font-mono tracking-widest">Quantum Role Gateway Node</p>
+      </div>
+
+      <!-- Role Selection Tab Grid -->
+      <div class="grid grid-cols-4 gap-2.5 w-full bg-black/40 border border-white/5 p-2 rounded-2xl mb-8">
+        <button @click="selectedRole = 'seller'" 
+                :class="selectedRole === 'seller' ? 'bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] border-[var(--accent-cyan)]/20' : 'text-white/30 border-transparent hover:text-white/60'"
+                class="role-btn py-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span class="text-[7.5px] font-black uppercase tracking-wider">Seller</span>
+        </button>
+        <button @click="selectedRole = 'hotel'" 
+                :class="selectedRole === 'hotel' ? 'bg-[var(--accent-purple)]/10 text-[var(--accent-purple)] border-[var(--accent-purple)]/25' : 'text-white/30 border-transparent hover:text-white/60'"
+                class="role-btn py-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="hotel" class="w-4 h-4"></i>
+          <span class="text-[7.5px] font-black uppercase tracking-wider">Hotel</span>
+        </button>
+        <button @click="selectedRole = 'restaurant'" 
+                :class="selectedRole === 'restaurant' ? 'bg-[var(--accent-pink)]/10 text-[var(--accent-pink)] border-[var(--accent-pink)]/25' : 'text-white/30 border-transparent hover:text-white/60'"
+                class="role-btn py-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="utensils" class="w-4 h-4"></i>
+          <span class="text-[7.5px] font-black uppercase tracking-wider">Dine</span>
+        </button>
+        <button @click="selectedRole = 'admin'" 
+                :class="selectedRole === 'admin' ? 'bg-[var(--accent-emerald)]/10 text-[var(--accent-emerald)] border-[var(--accent-emerald)]/25' : 'text-white/30 border-transparent hover:text-white/60'"
+                class="role-btn py-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          <span class="text-[7.5px] font-black uppercase tracking-wider">Admin</span>
+        </button>
+      </div>
+
+      <form @submit.prevent="executeAuthentication" class="w-full space-y-5">
+        <template x-if="errorMessage">
+          <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-[9px] font-black tracking-widest uppercase flex items-center gap-3 animate-in fade-in duration-300">
+            <i data-lucide="alert-octagon" class="w-4.5 h-4.5 text-red-500 shrink-0"></i>
+            <span x-text="errorMessage"></span>
+          </div>
+        </template>
+        <div class="space-y-1.5">
+          <label class="text-[8px] font-black uppercase tracking-widest text-white/40">Credential Uplink (Email)</label>
+          <div class="relative">
+            <input type="email" x-model="email" required
+                   placeholder="operator@omniai.io"
+                   class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 pl-10 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/10 transition-all font-mono">
+            <i data-lucide="user" class="w-4 h-4 text-white/20 absolute left-3 top-3.5"></i>
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[8px] font-black uppercase tracking-widest text-white/40">Access Key (Password)</label>
+          <div class="relative">
+            <input type="password" x-model="password" required
+                   placeholder="•••••••••••••••"
+                   class="w-full bg-black/40 border border-white/5 rounded-xl p-3.5 pl-10 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/10 transition-all font-mono">
+            <i data-lucide="lock" class="w-4 h-4 text-white/20 absolute left-3 top-3.5"></i>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-[8.5px] font-black uppercase tracking-wider text-white/30 pt-1">
+          <label class="flex items-center gap-1.5 cursor-pointer hover:text-white/60 transition-colors">
+            <input type="checkbox" class="accent-[var(--accent-cyan)] rounded bg-black/40 border-white/5 w-3.5 h-3.5"> Keep Uplink Active
+          </label>
+          <a href="#" class="hover:text-white/60 transition-colors">Recover Keys</a>
+        </div>
+
+        <button type="submit"
+                :class="{
+                  'bg-gradient-to-r from-[var(--accent-cyan)] to-blue-600 shadow-[0_0_20px_rgba(0,209,255,0.2)]': selectedRole === 'seller',
+                  'bg-gradient-to-r from-[var(--accent-purple)] to-pink-600 shadow-[0_0_20px_rgba(139,92,246,0.2)]': selectedRole === 'hotel',
+                  'bg-gradient-to-r from-[var(--accent-pink)] to-red-500 shadow-[0_0_20px_rgba(236,72,153,0.2)]': selectedRole === 'restaurant',
+                  'bg-gradient-to-r from-[var(--accent-emerald)] to-cyan-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]': selectedRole === 'admin'
+                }"
+                class="w-full py-4 text-[10px] font-black uppercase tracking-widest rounded-xl text-white hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-4">
+          <i data-lucide="power" class="w-4 h-4"></i> Establish Connection
+        </button>
+      </form>
+
+      <!-- Google Login Failover -->
+      <div class="relative flex py-4 items-center w-full">
+        <div class="flex-grow border-t border-white/5"></div>
+        <span class="flex-shrink mx-4 text-[8px] font-black uppercase tracking-widest text-white/20">Alternate Uplinks</span>
+        <div class="flex-grow border-t border-white/5"></div>
+      </div>
+
+      <button @click="email = 'manager@omniai.io'; password = 'Quantum#Nexus_98x!Alpha'; executeAuthentication()"
+              class="w-full py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 text-white/70">
+        <i data-lucide="chrome" class="w-4 h-4"></i> Sign In with Google
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Floating Theme Toggle -->
+  <div class="fixed top-6 right-6 z-50">
+    <button @click="toggleTheme()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/15 text-white/70 hover:text-white transition-all shadow-[0_0_15px_rgba(0,0,0,0.3)]">
+      <i :data-lucide="theme === 'dark' ? 'sun' : 'moon'" class="w-4.5 h-4.5"></i>
+    </button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

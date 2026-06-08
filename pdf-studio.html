@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMNIAI PDF Generation Studio - Premium AI Document OS</title>
+  <!-- Google Fonts & Tailwind & AlpineJS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['Orbitron', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --background: #030014;
+      --accent-cyan: #00d1ff;
+      --accent-purple: #8B5CF6;
+      --border-glow: rgba(139, 92, 246, 0.2);
+    }
+    
+    body {
+      background-color: var(--background);
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .cyber-grid {
+      background-size: 50px 50px;
+      background-image: 
+        linear-gradient(to right, rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+    }
+
+    .glass-panel {
+      background: rgba(10, 8, 28, 0.65);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .glass-panel-glow {
+      border: 1px solid rgba(0, 209, 255, 0.2);
+      box-shadow: 0 0 30px rgba(0, 209, 255, 0.1);
+    }
+
+    .neon-glow-cyan {
+      box-shadow: 0 0 25px rgba(0, 209, 255, 0.25);
+    }
+
+    .neon-glow-purple {
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
+    }
+
+    .text-gradient-cyan-purple {
+      background: linear-gradient(135deg, #00d1ff 0%, #8B5CF6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .glow-bg-1 {
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      width: 50%;
+      height: 50%;
+      background: rgba(139, 92, 246, 0.12);
+      filter: blur(150px);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-bg-2 {
+      position: absolute;
+      bottom: -10%;
+      right: -10%;
+      width: 50%;
+      height: 50%;
+      background: rgba(0, 209, 255, 0.08);
+      filter: blur(150px);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hologram-flicker {
+      animation: flicker 4s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 0.95; }
+      50% { opacity: 0.85; }
+      51% { opacity: 0.92; }
+      52% { opacity: 0.88; }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="cyber-grid min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-[var(--accent-cyan)]/30 selection:text-white"
+      x-data="{
+        activeModule: 'PDFStudio',
+        activeTool: null,
+        uploadedFiles: [],
+        isProcessing: false,
+        processStep: '',
+        processPercent: 0,
+        zoomLevel: 100,
+        activePage: 1,
+        showShareModal: false,
+        shareSuccess: false,
+        isDragOver: false,
+        selectedOrientation: 'portrait',
+        selectedPageSize: 'A4',
+        selectedMargin: 'thin',
+        selectedCompression: 'recommended',
+        aiTopic: '',
+        aiDocType: 'business_report',
+        aiTone: 'technical',
+        aiLength: '1-3',
+        generatedDocContent: null,
+        resumeData: {
+          name: 'ALEXANDER MERCER',
+          title: 'Senior Solutions Architect',
+          summary: 'Dynamic engineering leader specialized in building high-performance AI operating systems, distributed monorepos, and secure local vault networks.',
+          experience: 'Quantum Systems Inc. - Tech Lead (2024 - Present)\n- Led migration to Next.js App Router decreasing initial load by 40%.\n- Deployed server-side proxy image compilation layers with zero-key fallback setups.',
+          skills: 'React, Next.js, Node.js, TypeScript, AI Integrations, Web Security'
+        },
+        activityLogs: [
+          { id: '1', action: 'Merge PDF', fileName: 'signed_contract_final.pdf', fileSize: '4.8 MB', time: '10 mins ago', status: 'completed' },
+          { id: '2', action: 'Image to PDF', fileName: 'schematic_design_node.pdf', fileSize: '12.4 MB', time: '1 hour ago', status: 'completed' },
+          { id: '3', action: 'AI PDF', fileName: 'nexus_os_architecture.pdf', fileSize: '1.2 MB', time: '3 hours ago', status: 'completed' },
+          { id: '4', action: 'Compress PDF', fileName: 'compressed_marketing_deck.pdf', fileSize: '3.1 MB', time: 'Yesterday', status: 'completed' }
+        ],
+        // helper to get pages count
+        getPreviewPagesCount() {
+          if (this.activeTool === 'image') return Math.max(1, this.uploadedFiles.length);
+          if (this.activeTool === 'merge') return Math.max(1, this.uploadedFiles.reduce((acc, f) => acc + (f.pagesCount || 1), 0));
+          if (this.activeTool === 'ai') return this.generatedDocContent ? 2 : 1;
+          if (this.activeTool === 'resume') return 1;
+          return 1;
+        },
+        triggerFileUpload(event) {
+          const files = event.target.files;
+          if (!files || files.length === 0) return;
+          for (let i = 0; i < files.length; i++) {
+            const f = files[i];
+            const previewUrl = f.type.startsWith('image/') ? URL.createObjectURL(f) : '';
+            this.uploadedFiles.push({
+              id: `${Date.now()}-${i}`,
+              name: f.name,
+              size: f.size,
+              type: f.type,
+              previewUrl,
+              pagesCount: f.type.includes('pdf') ? Math.floor(Math.random() * 5) + 1 : 1
+            });
+          }
+          this.$nextTick(() => { lucide.createIcons(); });
+        },
+        removeFile(id) {
+          this.uploadedFiles = this.uploadedFiles.filter(f => f.id !== id);
+        },
+        moveFileOrder(index, direction) {
+          if (direction === 'left' && index === 0) return;
+          if (direction === 'right' && index === this.uploadedFiles.length - 1) return;
+          const targetIndex = direction === 'left' ? index - 1 : index + 1;
+          const temp = this.uploadedFiles[index];
+          this.uploadedFiles[index] = this.uploadedFiles[targetIndex];
+          this.uploadedFiles[targetIndex] = temp;
+        },
+        startProcessingPipeline(actionLabel, callback) {
+          this.isProcessing = true;
+          this.processPercent = 0;
+          this.processStep = 'Initializing quantum compiler node...';
+          
+          let timer = setInterval(() => {
+            this.processPercent += 20;
+            if (this.processPercent === 20) this.processStep = 'Synthesizing document structures...';
+            if (this.processPercent === 40) this.processStep = 'Compiling font coordinates & layout boxes...';
+            if (this.processPercent === 60) this.processStep = 'Injecting cryptographic signature...';
+            if (this.processPercent === 80) this.processStep = 'Exporting high-fidelity PDF buffer...';
+            if (this.processPercent >= 100) {
+              clearInterval(timer);
+              this.isProcessing = false;
+              callback();
+              
+              // Add log
+              const newLog = {
+                id: Date.now().toString(),
+                action: actionLabel,
+                fileName: `omniai_compiled_${Math.floor(Math.random() * 1000)}.pdf`,
+                fileSize: `${(Math.random() * 5 + 1).toFixed(1)} MB`,
+                time: 'Just now',
+                status: 'completed'
+              };
+              this.activityLogs = [newLog, ...this.activityLogs];
+            }
+          }, 400);
+        },
+        executeAIGeneration() {
+          if (!this.aiTopic.trim()) return;
+          this.isProcessing = true;
+          this.processPercent = 0;
+          this.processStep = 'Triggering n8n Core vector pipeline...';
+          
+          let timer = setInterval(() => {
+            this.processPercent += 25;
+            if (this.processPercent === 25) this.processStep = 'Querying Google Gemini model layers...';
+            if (this.processPercent === 50) this.processStep = 'Compiling PDF metadata nodes...';
+            if (this.processPercent === 75) this.processStep = 'Formatting layout structure layers...';
+            if (this.processPercent >= 100) {
+              clearInterval(timer);
+              this.isProcessing = false;
+              
+              this.generatedDocContent = `### NEURAL COGNITIVE DOSSIER: ` + this.aiTopic.toUpperCase() + `\n` +
+`Document Class: ` + this.aiDocType.toUpperCase() + ` | Model Tone: ` + this.aiTone.toUpperCase() + `\n` +
+`Generated on: ` + new Date().toLocaleDateString() + `\n\n` +
+`#### 1. EXECUTIVE METRIC SUMMARY\n` +
+`OmniAI PDF Architect has successfully synthesized the reference outline for &quot;` + this.aiTopic + `&quot;. Based on strategic predictive models, scaling this framework yields exceptional operational density and reduces interface friction by 40% across Q3 and Q4 cycles.\n\n` +
+`#### 2. SYSTEM ARCHITECTURE & INTEGRATION VECTORS\n` +
+`* **Central Processor Node**: Dynamic multi-modal routing engine.\n` +
+`* **Chronological Sync Core**: Direct encryption pipeline preserving data sovereignty.\n` +
+`* **Vector Vault Sync**: Seamless LocalStorage bridging supporting instant backup retrievals.\n\n` +
+`#### 3. PRAGMATIC PROJECT RECOMMENDATIONS\n` +
+`1. Deconstruct monolithic modules into reusable custom hooks (e.g. useDebounce, useInfiniteScroll).\n` +
+`2. Integrate secure transaction checkpoints using local UPI or cash verification models.\n` +
+`3. Replace high-cost image generators with local pre-curated fallback libraries to establish 100% visual uptime.`;
+              
+              const newLog = {
+                id: Date.now().toString(),
+                action: 'AI PDF',
+                fileName: `ai_` + this.aiDocType + `_` + Math.floor(Math.random() * 1000) + `.pdf`,
+                fileSize: '1.4 MB',
+                time: 'Just now',
+                status: 'completed'
+              };
+              this.activityLogs = [newLog, ...this.activityLogs];
+            }
+          }, 500);
+        },
+        downloadTrigger() {
+          this.startProcessingPipeline('Download PDF', async () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+              orientation: this.selectedOrientation,
+              unit: 'mm',
+              format: this.selectedPageSize.toLowerCase() === 'letter' ? 'letter' : 'a4'
+            });
+
+            const loadImageAsDataURL = (url) => {
+              return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = img.naturalWidth || img.width;
+                  canvas.height = img.naturalHeight || img.height;
+                  const ctx = canvas.getContext('2d');
+                  if (ctx) {
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                  } else {
+                    reject(new Error('Canvas context failed'));
+                  }
+                };
+                img.onerror = () => reject(new Error('Image load error'));
+                img.src = url;
+              });
+            };
+
+            const drawPlaceholderPage = (file) => {
+              doc.setDrawColor(220, 220, 220);
+              doc.setLineWidth(1);
+              doc.rect(20, 25, 170, 240);
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(48);
+              doc.setTextColor(200, 200, 200);
+              doc.text('PDF', 105, 120, { align: 'center' });
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(12);
+              doc.setTextColor(100, 100, 100);
+              doc.text(file.name, 105, 140, { align: 'center' });
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8);
+              doc.setTextColor(150, 150, 150);
+              doc.text('FILE SIZE: ' + (file.size / 1024 / 1024).toFixed(2) + ' MB  |  TYPE: ' + file.type, 105, 150, { align: 'center' });
+            };
+
+            if (this.activeTool === 'ai') {
+              doc.setDrawColor(0, 209, 255);
+              doc.setLineWidth(1.5);
+              doc.line(20, 15, 190, 15);
+
+              const textContent = this.generatedDocContent || 'No AI text generated.';
+              const lines = textContent.split('\n');
+              let y = 30;
+              
+              for (const line of lines) {
+                if (y > 275) {
+                  doc.addPage();
+                  y = 20;
+                }
+                
+                let currentLine = line.trim();
+                if (currentLine.startsWith('###')) {
+                  doc.setFont('helvetica', 'bold');
+                  doc.setFontSize(14);
+                  doc.setTextColor(17, 24, 39);
+                  y += 4;
+                  doc.text(currentLine.replace('###', '').trim(), 20, y);
+                  y += 8;
+                } else if (currentLine.startsWith('####')) {
+                  doc.setFont('helvetica', 'bold');
+                  doc.setFontSize(11);
+                  doc.setTextColor(17, 24, 39);
+                  y += 2;
+                  doc.text(currentLine.replace('####', '').trim(), 20, y);
+                  y += 6;
+                } else if (currentLine.startsWith('*')) {
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(10);
+                  doc.setTextColor(71, 85, 105);
+                  const bulletText = '• ' + currentLine.substring(1).trim();
+                  const wrapped = doc.splitTextToSize(bulletText, 160);
+                  for (const wl of wrapped) {
+                    if (y > 275) {
+                      doc.addPage();
+                      y = 20;
+                    }
+                    doc.text(wl, 25, y);
+                    y += 7;
+                  }
+                } else if (currentLine.startsWith('1.') || currentLine.startsWith('2.') || currentLine.startsWith('3.')) {
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(10);
+                  doc.setTextColor(71, 85, 105);
+                  const wrapped = doc.splitTextToSize(currentLine, 160);
+                  for (const wl of wrapped) {
+                    if (y > 275) {
+                      doc.addPage();
+                      y = 20;
+                    }
+                    doc.text(wl, 25, y);
+                    y += 7;
+                  }
+                } else if (currentLine === '') {
+                  y += 4;
+                } else {
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(10);
+                  doc.setTextColor(51, 65, 85);
+                  const wrapped = doc.splitTextToSize(currentLine, 170);
+                  for (const wl of wrapped) {
+                    if (y > 275) {
+                      doc.addPage();
+                      y = 20;
+                    }
+                    doc.text(wl, 20, y);
+                    y += 7;
+                  }
+                }
+              }
+            } else if (this.activeTool === 'resume') {
+              doc.setDrawColor(139, 92, 246);
+              doc.setLineWidth(1.5);
+              doc.line(20, 15, 190, 15);
+              
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(22);
+              doc.setTextColor(17, 24, 39);
+              doc.text(this.resumeData.name.toUpperCase(), 105, 30, { align: 'center' });
+              
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(11);
+              doc.setTextColor(139, 92, 246);
+              doc.text(this.resumeData.title.toUpperCase(), 105, 37, { align: 'center' });
+              
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8);
+              doc.setTextColor(100, 116, 139);
+              doc.text('Denver, CO | contact@omniai.io | (303) 555-0199', 105, 43, { align: "center" });
+              
+              let y = 52;
+              
+              doc.setDrawColor(226, 232, 240);
+              doc.setLineWidth(0.5);
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(11);
+              doc.setTextColor(17, 24, 39);
+              doc.text('EXECUTIVE SUMMARY', 20, y);
+              doc.line(20, y + 2, 190, y + 2);
+              y += 8;
+              
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(9.5);
+              doc.setTextColor(51, 65, 85);
+              const wrappedSummary = doc.splitTextToSize(this.resumeData.summary, 170);
+              for (const line of wrappedSummary) {
+                doc.text(line, 20, y);
+                y += 5.5;
+              }
+              
+              y += 6;
+              
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(11);
+              doc.setTextColor(17, 24, 39);
+              doc.text('PROFESSIONAL EXPERIENCE', 20, y);
+              doc.line(20, y + 2, 190, y + 2);
+              y += 8;
+              
+              const expLines = this.resumeData.experience.split('\n');
+              for (const line of expLines) {
+                if (y > 275) {
+                  doc.addPage();
+                  y = 20;
+                }
+                const cleanLine = line.trim();
+                if (cleanLine.startsWith('-') || cleanLine.startsWith('*')) {
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(9);
+                  doc.setTextColor(71, 85, 105);
+                  const bulletText = '• ' + cleanLine.substring(1).trim();
+                  const wrappedBullet = doc.splitTextToSize(bulletText, 160);
+                  for (const wb of wrappedBullet) {
+                    if (y > 275) {
+                      doc.addPage();
+                      y = 20;
+                    }
+                    doc.text(wb, 26, y);
+                    y += 5;
+                  }
+                } else if (cleanLine !== '') {
+                  doc.setFont('helvetica', 'bold');
+                  doc.setFontSize(9.5);
+                  doc.setTextColor(51, 65, 85);
+                  doc.text(cleanLine, 20, y);
+                  y += 5.5;
+                }
+              }
+              
+              y += 6;
+              
+              if (y > 260) {
+                doc.addPage();
+                y = 20;
+              }
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(11);
+              doc.setTextColor(17, 24, 39);
+              doc.text('TECHNICAL SKILLS', 20, y);
+              doc.line(20, y + 2, 190, y + 2);
+              y += 8;
+              
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(9);
+              doc.setTextColor(71, 85, 105);
+              const wrappedSkills = doc.splitTextToSize(this.resumeData.skills, 170);
+              for (const line of wrappedSkills) {
+                if (y > 275) {
+                  doc.addPage();
+                  y = 20;
+                }
+                doc.text(line, 20, y);
+                y += 5;
+              }
+            } else if (this.activeTool === 'image' && this.uploadedFiles.length > 0) {
+              let isFirst = true;
+              for (const file of this.uploadedFiles) {
+                if (!isFirst) {
+                  doc.addPage();
+                }
+                isFirst = false;
+                
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text('OMNIAI IMAGE TO PDF | ' + file.name.toUpperCase(), 20, 15);
+                
+                if (file.previewUrl) {
+                  try {
+                    const dataUrl = await loadImageAsDataURL(file.previewUrl);
+                    doc.addImage(dataUrl, 'JPEG', 20, 25, 170, 220, undefined, 'FAST');
+                  } catch (err) {
+                    console.error('Failed to load image, using placeholder', err);
+                    drawPlaceholderPage(file);
+                  }
+                } else {
+                  drawPlaceholderPage(file);
+                }
+              }
+            } else {
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(16);
+              doc.text('OMNIAI PDF CONVERSION PORTAL', 105, 40, { align: 'center' });
+
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(10);
+              doc.text('COMPILED DATE: ' + new Date().toLocaleString(), 105, 50, { align: 'center' });
+              doc.text('TOOL CATEGORY: ' + (this.activeTool ? this.activeTool.toUpperCase() : 'GENERAL'), 105, 56, { align: 'center' });
+
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(12);
+              doc.text('Successfully Synced Assets stack:', 20, 80);
+
+              let y = 92;
+              if (this.uploadedFiles.length > 0) {
+                this.uploadedFiles.forEach((f, i) => {
+                  if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                  }
+                  doc.setFont('helvetica', 'normal');
+                  doc.text((i + 1) + '. ' + f.name + ' - ' + (f.size / 1024 / 1024).toFixed(2) + ' MB (Vector)', 25, y);
+                  y += 8;
+                });
+              } else {
+                doc.setFont('helvetica', 'italic');
+                doc.text('No external assets uploaded. Synthesized standalone vector envelope.', 25, y);
+              }
+            }
+
+            doc.save('omniai_dossier_' + (this.activeTool || 'document') + '.pdf');
+          });
+        },
+        resetWorkspace() {
+          this.uploadedFiles = [];
+          this.generatedDocContent = null;
+          this.activePage = 1;
+        }
+      }">
+
+  <!-- Background Blur Gradients -->
+  <div class="glow-bg-1"></div>
+  <div class="glow-bg-2"></div>
+
+  <!-- Main Window Wrapper -->
+  <div class="flex-1 flex flex-col lg:flex-row relative z-10 h-screen overflow-hidden">
+    
+    <!-- ── Sidebar Nav ── -->
+    <aside class="border-b lg:border-b-0 lg:border-r border-white/5 flex lg:flex-col items-center justify-between lg:justify-start lg:py-8 px-6 lg:px-0 bg-black/40 backdrop-blur-3xl shrink-0 w-full lg:w-24 z-50 h-20 lg:h-full gap-4">
+      <div class="flex lg:flex-col items-center gap-6">
+        <div class="flex items-center gap-2 lg:flex-col lg:gap-4">
+          <img src="public/logo.png" alt="OMNIAI Logo" class="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(0,209,255,0.4)] hologram-flicker">
+          <span class="text-xs font-mono font-black tracking-widest text-[var(--accent-cyan)] hidden lg:block">NEXUS</span>
+        </div>
+      </div>
+      <div class="flex lg:flex-col items-center gap-1 sm:gap-2 my-auto">
+        <a href="/" class="p-3.5 rounded-2xl text-white/20 hover:text-white/60 transition-all duration-300 relative group">
+          <i data-lucide="home" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Home</span>
+        </a>
+        <a href="/" class="p-3.5 rounded-2xl text-white/20 hover:text-white/60 transition-all duration-300 relative group">
+          <i data-lucide="message-square" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Chat</span>
+        </a>
+        <a href="/" class="p-3.5 rounded-2xl text-white/20 hover:text-white/60 transition-all duration-300 relative group">
+          <i data-lucide="image" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Image</span>
+        </a>
+        <a href="/" class="p-3.5 rounded-2xl text-white/20 hover:text-white/60 transition-all duration-300 relative group">
+          <i data-lucide="play" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Video</span>
+        </a>
+        <button class="p-3.5 rounded-2xl text-[var(--accent-cyan)] scale-110 relative group bg-[var(--accent-cyan)]/5 shadow-[0_0_20px_rgba(0,209,255,0.15)] border border-[var(--accent-cyan)]/10">
+          <i data-lucide="file-text" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">PDF Studio</span>
+        </button>
+        <a href="/" class="p-3.5 rounded-2xl text-white/20 hover:text-white/60 transition-all duration-300 relative group">
+          <i data-lucide="briefcase" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Business Hub</span>
+        </a>
+        <a href="/" class="p-3.5 rounded-2xl text-white/20 hover:text-white/60 transition-all duration-300 relative group">
+          <i data-lucide="calendar" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Booking Hub</span>
+        </a>
+        <a href="/" class="p-3.5 rounded-2xl text-white/20 hover:text-white/60 transition-all duration-300 relative group">
+          <i data-lucide="database" class="w-5 h-5"></i>
+          <span class="absolute left-full ml-3 px-2 py-1 rounded-lg bg-black/90 text-[8px] font-black uppercase tracking-widest text-white/60 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Vault</span>
+        </a>
+      </div>
+      <div class="hidden lg:block mt-auto">
+        <button class="w-9 h-9 rounded-xl border border-white/10 hover:border-[var(--accent-cyan)]/30 flex items-center justify-center transition-all bg-white/[0.02]">
+          <i data-lucide="settings" class="w-4 h-4 text-white/40"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── Workspace Layout: Content Columns ── -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+      
+      <!-- Center Workstation Console -->
+      <main class="flex-1 overflow-y-auto no-scrollbar p-6 lg:p-10 space-y-8 relative">
+        
+        <!-- Header -->
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 border-b border-white/5 pb-6">
+          <div class="space-y-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.02] border border-white/5">
+              <i data-lucide="sparkles" class="w-3 h-3 text-[var(--accent-purple)] animate-pulse"></i>
+              <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">V3.5 Quantum Studio Node</span>
+            </div>
+            <h1 class="text-3xl md:text-5xl font-black tracking-tighter text-white leading-none">
+              OMNIAI PDF Studio<span class="text-[var(--accent-cyan)]">.</span>
+            </h1>
+            <p class="text-xs text-white/40 max-w-lg leading-relaxed">
+              Redesigned premium AI SaaS experience to merge, split, compress, and auto-synthesize intelligent ATS resumes and technical dossiers.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <template x-if="activeTool">
+              <button 
+                @click="activeTool = null; resetWorkspace();"
+                class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-[9px] font-black uppercase tracking-widest transition-all"
+              >
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Tool Matrix
+              </button>
+            </template>
+            <div class="hidden sm:flex items-center gap-3 px-4 py-2 rounded-full glass-panel border-white/10 text-[9px] font-mono text-white/40">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+              <span>UPLINK: ONLINE (12ms)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ACTIVE PROCESSING HUD OVERLAY ── -->
+        <template x-if="isProcessing">
+          <div class="fixed inset-0 z-[9999] backdrop-blur-md bg-black/60 flex items-center justify-center p-6">
+            <div class="glass-panel max-w-sm w-full p-8 rounded-3xl border-[var(--accent-cyan)]/30 text-center relative overflow-hidden">
+              <div class="absolute top-0 left-0 h-1 bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-purple)] transition-all duration-300" :style="'width: ' + processPercent + '%'"></div>
+              <div class="w-14 h-14 rounded-full bg-[var(--accent-cyan)]/10 border border-[var(--accent-cyan)]/30 flex items-center justify-center mx-auto mb-6 animate-pulse">
+                <i data-lucide="refresh-cw" class="w-6 h-6 text-[var(--accent-cyan)] animate-spin"></i>
+              </div>
+              <h3 class="text-sm font-black uppercase tracking-widest text-white mb-2">Neural Synthesis Node</h3>
+              <p class="text-[10px] text-white/50 mb-5 font-mono h-4" x-text="processStep"></p>
+              
+              <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden mb-3">
+                <div class="bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-purple)] h-full transition-all duration-300" :style="'width: ' + processPercent + '%'"></div>
+              </div>
+              <div class="text-[9px] font-mono text-[var(--accent-cyan)] font-black uppercase tracking-widest" x-text="processPercent + '% SYNCHRONIZED'"></div>
+            </div>
+          </div>
+        </template>
+
+        <!-- ── SHARE POPUP MODAL ── -->
+        <template x-if="showShareModal">
+          <div class="fixed inset-0 z-[9998] backdrop-blur-md bg-black/50 flex items-center justify-center p-6" @click.self="showShareModal = false">
+            <div class="glass-panel max-w-sm w-full p-6 rounded-2xl border-white/10 text-center animate-in fade-in zoom-in duration-200">
+              <h4 class="text-xs font-black uppercase tracking-widest text-white mb-3">Share Encrypted Node</h4>
+              <p class="text-[10px] text-white/40 mb-5">Create a highly secure, time-expiring neural node link to share this PDF dossier.</p>
+              
+              <div class="bg-black/40 border border-white/5 p-3 rounded-xl font-mono text-[9px] text-white/80 select-all truncate mb-5">
+                https://omniai.io/d/share-48281920
+              </div>
+
+              <div class="flex gap-3">
+                <button 
+                  @click="showShareModal = false"
+                  class="flex-1 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-[8px] font-black uppercase tracking-widest rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  @click="shareSuccess = true; setTimeout(() => { showShareModal = false; shareSuccess = false; }, 1500);"
+                  class="flex-1 py-2.5 bg-gradient-to-r from-[var(--accent-cyan)] to-blue-600 hover:scale-[1.02] text-[8px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(0,209,255,0.2)]"
+                >
+                  <span x-text="shareSuccess ? 'LINK COPIED' : 'COPY SHARE LINK'"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- ── MAIN TOOL SELECTION MATRIX ── -->
+        <template x-if="!activeTool">
+          <div class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <!-- Cards definitions -->
+              
+              <div @click="activeTool = 'image'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-[var(--accent-cyan)]/30 hover:shadow-[0_0_35px_rgba(0,209,255,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-cyan)]/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-cyan-500/5 border-cyan-500/10 text-cyan-400 group-hover:border-cyan-400/30 transition-all duration-300">
+                    <i data-lucide="file-image" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">Image to PDF</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Convert PNG, JPEG, and dynamic WebP visuals into high-fidelity compiled PDF dossiers.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-[var(--accent-cyan)] transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-[var(--accent-cyan)] transition-all"></i>
+                </div>
+              </div>
+
+              <div @click="activeTool = 'merge'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-[var(--accent-purple)]/30 hover:shadow-[0_0_35px_rgba(139,92,246,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-purple)]/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-purple-500/5 border-purple-500/10 text-purple-400 group-hover:border-purple-400/30 transition-all duration-300">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">Merge PDF</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Assemble separate files into a singular, structurally unified master document.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-[var(--accent-purple)] transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-[var(--accent-purple)] transition-all"></i>
+                </div>
+              </div>
+
+              <div @click="activeTool = 'split'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-red-500/30 hover:shadow-[0_0_35px_rgba(239,68,68,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-red-500/5 border-red-500/10 text-red-400 group-hover:border-red-400/30 transition-all duration-300">
+                    <i data-lucide="scissors" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">Split PDF</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Extract customized page segments or decompose a massive document into individual chapters.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-red-400 transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-red-400 transition-all"></i>
+                </div>
+              </div>
+
+              <div @click="activeTool = 'compress'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-amber-500/30 hover:shadow-[0_0_35px_rgba(245,158,11,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-amber-500/5 border-amber-500/10 text-amber-400 group-hover:border-amber-400/30 transition-all duration-300">
+                    <i data-lucide="file-archive" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">Compress PDF</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Reduce file bytes dramatically while preserving absolute vector layout resolution.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-amber-400 transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-amber-400 transition-all"></i>
+                </div>
+              </div>
+
+              <div @click="activeTool = 'ai'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-pink-500/30 hover:shadow-[0_0_35px_rgba(236,72,153,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-pink-500/5 border-pink-500/10 text-pink-400 group-hover:border-pink-400/30 transition-all duration-300">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">AI PDF Generator</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Enter any descriptive prompt topic to automatically compile structures and contents.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-pink-400 transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-pink-400 transition-all"></i>
+                </div>
+              </div>
+
+              <div @click="activeTool = 'resume'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-emerald-500/30 hover:shadow-[0_0_35px_rgba(16,185,129,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-emerald-500/5 border-emerald-500/10 text-emerald-400 group-hover:border-emerald-400/30 transition-all duration-300">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">Resume PDF Builder</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Synthesize highly robust, ATS-optimized professional resumes dynamically.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-emerald-400 transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-emerald-400 transition-all"></i>
+                </div>
+              </div>
+
+              <div @click="activeTool = 'image'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-blue-500/30 hover:shadow-[0_0_35px_rgba(59,130,246,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-blue-500/5 border-blue-500/10 text-blue-400 group-hover:border-blue-400/30 transition-all duration-300">
+                    <i data-lucide="file-down" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">PDF to Image</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Extract high-density raster JPG/PNG screenshots from PDF layout vectors instantly.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-blue-400 transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-blue-400 transition-all"></i>
+                </div>
+              </div>
+
+              <div @click="activeTool = 'image'" class="glass-panel p-6 rounded-3xl border border-white/5 hover:border-orange-500/30 hover:shadow-[0_0_35px_rgba(249,115,22,0.15)] flex flex-col justify-between group cursor-pointer relative overflow-hidden min-h-[220px] transition-all duration-300">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-[40px] translate-x-10 -translate-y-10 group-hover:scale-115 transition-transform duration-500 pointer-events-none"></div>
+                <div>
+                  <div class="w-11 h-11 rounded-2xl border flex items-center justify-center mb-5 bg-orange-500/5 border-orange-500/10 text-orange-400 group-hover:border-orange-400/30 transition-all duration-300">
+                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="text-sm font-black text-white mb-2">Rearrange Pages</h3>
+                  <p class="text-[10px] text-white/40 leading-relaxed">Alter document order, delete unwanted pages, and re-compile structure mappings.</p>
+                </div>
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-white/5">
+                  <span class="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-orange-400 transition-colors">Launch Workstation</span>
+                  <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-white/20 group-hover:translate-x-1 group-hover:text-orange-400 transition-all"></i>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Recent activity logs -->
+            <div class="glass-panel p-6 rounded-3xl border border-white/5 space-y-6">
+              <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                <h3 class="text-xs font-black uppercase tracking-widest text-white/80 flex items-center gap-2">
+                  <i data-lucide="activity" class="w-4 h-4 text-[var(--accent-purple)]"></i> Real-time Quantum Activity Logs
+                </h3>
+                <span class="text-[9px] font-mono text-white/30">Auto-synced with Vault</span>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <template x-for="log in activityLogs" :key="log.id">
+                  <div class="bg-black/20 border border-white/5 p-4 rounded-2xl flex flex-col justify-between min-h-[110px]">
+                    <div class="flex justify-between items-start gap-2">
+                      <div>
+                        <span class="text-[8px] font-mono uppercase tracking-wider text-[var(--accent-cyan)] font-black" x-text="log.action"></span>
+                        <h4 class="text-[10px] font-bold text-white/90 truncate max-w-[130px]" x-text="log.fileName"></h4>
+                      </div>
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-500" title="Compiled successfully"></span>
+                    </div>
+                    <div class="flex justify-between items-center text-[8px] font-mono text-white/30 mt-4 pt-2 border-t border-white/5">
+                      <span x-text="log.fileSize"></span>
+                      <span x-text="log.time"></span>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- ── ACTIVE OPERATIONS CONSOLE ── -->
+        <template x-if="activeTool">
+          <div class="glass-panel rounded-3xl border border-white/5 p-6 lg:p-8 flex flex-col relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-80 h-80 bg-[var(--accent-cyan)]/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+            
+            <div class="flex items-center justify-between border-b border-white/5 pb-5 mb-8">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-[var(--accent-cyan)]">
+                  <template x-if="activeTool === 'image'"><i data-lucide="file-image" class="w-5 h-5"></i></template>
+                  <template x-if="activeTool === 'merge'"><i data-lucide="layers" class="w-5 h-5"></i></template>
+                  <template x-if="activeTool === 'split'"><i data-lucide="scissors" class="w-5 h-5"></i></template>
+                  <template x-if="activeTool === 'compress'"><i data-lucide="file-archive" class="w-5 h-5"></i></template>
+                  <template x-if="activeTool === 'ai'"><i data-lucide="sparkles" class="w-5 h-5"></i></template>
+                  <template x-if="activeTool === 'resume'"><i data-lucide="user-check" class="w-5 h-5"></i></template>
+                </div>
+                <div>
+                  <h3 class="text-xs font-black uppercase tracking-widest text-white" x-text="activeTool.toUpperCase() + ' Operations Console'"></h3>
+                  <p class="text-[9px] font-mono text-white/30">Secure local client-side pipeline</p>
+                </div>
+              </div>
+              <button 
+                @click="resetWorkspace"
+                class="px-3 py-1.5 rounded-lg border border-white/5 bg-white/5 text-[9px] font-black uppercase hover:bg-white/10 transition-all text-white/60"
+              >
+                Clear Sandbox
+              </button>
+            </div>
+
+            <!-- ── DYNAMIC SUB-WORKSPACE CONTENT ── -->
+            
+            <!-- Uploader layout for files input modules -->
+            <template x-if="['image', 'merge', 'split', 'compress'].includes(activeTool)">
+              <div class="space-y-8 flex-1 flex flex-col">
+                
+                <div 
+                  @dragover.prevent="isDragOver = true"
+                  @dragleave="isDragOver = false"
+                  @drop.prevent="isDragOver = false; triggerFileUpload($event)"
+                  @click="$refs.fileInput.click()"
+                  :class="isDragOver ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/5 shadow-[0_0_20px_rgba(0,209,255,0.1)]' : 'border-white/10 bg-black/20 hover:border-white/20'"
+                  class="border border-dashed rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center min-h-[150px]"
+                >
+                  <input 
+                    type="file" 
+                    x-ref="fileInput" 
+                    @change="triggerFileUpload($event)"
+                    multiple 
+                    :accept="activeTool === 'image' ? 'image/*' : '.pdf'"
+                    class="hidden" 
+                  />
+                  <div class="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:scale-105 group-hover:border-[var(--accent-cyan)]/30 transition-all mb-3 text-white/40 group-hover:text-[var(--accent-cyan)]">
+                    <i data-lucide="upload" class="w-5 h-5"></i>
+                  </div>
+                  <h4 class="text-[10px] font-black uppercase tracking-widest text-white/80 group-hover:text-white transition-colors mb-1">
+                    Drag & Drop File Sandbox
+                  </h4>
+                  <p class="text-[9px] text-white/30" x-text="activeTool === 'image' ? 'PNG, JPEG, WebP graphics supported' : 'PDF documents supported'"></p>
+                </div>
+
+                <!-- Files Stack list -->
+                <template x-if="uploadedFiles.length > 0">
+                  <div class="space-y-4">
+                    <h4 class="text-[9px] font-black uppercase tracking-widest text-white/40">Sandbox Assets Grid (<span x-text="uploadedFiles.length"></span>)</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <template x-for="(file, idx) in uploadedFiles" :key="file.id">
+                        <div class="glass-panel p-4 rounded-xl border border-white/5 flex flex-col justify-between min-h-[120px] relative overflow-hidden group">
+                          <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                              <h5 class="text-[10px] font-bold truncate text-white/90" x-text="file.name"></h5>
+                              <span class="text-[8px] font-mono text-white/30" x-text="(file.size / 1024 / 1024).toFixed(2) + ' MB'"></span>
+                            </div>
+                            <button 
+                              @click="removeFile(file.id)"
+                              class="p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all shrink-0"
+                            >
+                              <i data-lucide="trash-2" class="w-3 h-3"></i>
+                            </button>
+                          </div>
+
+                          <!-- Thumbnail -->
+                          <template x-if="file.previewUrl">
+                            <div class="w-full h-12 rounded-lg overflow-hidden border border-white/5 mt-2 bg-black/40">
+                              <img :src="file.previewUrl" class="w-full h-full object-cover">
+                            </div>
+                          </template>
+
+                          <!-- Operations -->
+                          <div class="flex items-center justify-between border-t border-white/5 pt-2.5 mt-3">
+                            <span class="text-[8px] font-mono text-[var(--accent-cyan)] bg-[var(--accent-cyan)]/5 px-2 py-0.5 rounded">Page <span x-text="idx + 1"></span></span>
+                            <div class="flex gap-1 text-[8px] font-bold">
+                              <button 
+                                @click="moveFileOrder(idx, 'left')"
+                                :disabled="idx === 0"
+                                class="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 disabled:opacity-20 text-white"
+                              >
+                                &lt;
+                              </button>
+                              <button 
+                                @click="moveFileOrder(idx, 'right')"
+                                :disabled="idx === uploadedFiles.length - 1"
+                                class="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 disabled:opacity-20 text-white"
+                              >
+                                &gt;
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- Configurations details -->
+                <div class="glass-panel p-5 rounded-2xl border border-white/5 bg-black/10 mt-auto space-y-4">
+                  <h4 class="text-[10px] font-black uppercase tracking-wider text-white/80 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-3.5 h-3.5 text-[var(--accent-cyan)]"></i> Document Node Configurations
+                  </h4>
+                  
+                  <template x-if="activeTool === 'image'">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 text-[9px]">
+                      <div class="space-y-1.5">
+                        <span class="font-black uppercase tracking-widest text-white/40">Orientation</span>
+                        <div class="flex gap-1.5">
+                          <button @click="selectedOrientation = 'portrait'" :class="selectedOrientation === 'portrait' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="flex-1 py-2 rounded-lg border text-center uppercase font-black transition-all">Portrait</button>
+                          <button @click="selectedOrientation = 'landscape'" :class="selectedOrientation === 'landscape' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="flex-1 py-2 rounded-lg border text-center uppercase font-black transition-all">Landscape</button>
+                        </div>
+                      </div>
+                      <div class="space-y-1.5">
+                        <span class="font-black uppercase tracking-widest text-white/40">Page Size</span>
+                        <div class="flex gap-1.5">
+                          <button @click="selectedPageSize = 'A4'" :class="selectedPageSize === 'A4' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="flex-1 py-2 rounded-lg border text-center uppercase font-black transition-all">A4</button>
+                          <button @click="selectedPageSize = 'Letter'" :class="selectedPageSize === 'Letter' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="flex-1 py-2 rounded-lg border text-center uppercase font-black transition-all">Letter</button>
+                        </div>
+                      </div>
+                      <div class="space-y-1.5">
+                        <span class="font-black uppercase tracking-widest text-white/40">Margins</span>
+                        <div class="flex gap-1.5">
+                          <button @click="selectedMargin = 'none'" :class="selectedMargin === 'none' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="flex-1 py-2 rounded-lg border text-center uppercase font-black transition-all">None</button>
+                          <button @click="selectedMargin = 'thin'" :class="selectedMargin === 'thin' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="flex-1 py-2 rounded-lg border text-center uppercase font-black transition-all">Thin</button>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <template x-if="activeTool === 'compress'">
+                    <div class="space-y-3 text-[9px]">
+                      <span class="font-black uppercase tracking-widest text-white/40">Compression Level</span>
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <button @click="selectedCompression = 'extreme'" :class="selectedCompression === 'extreme' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="p-3.5 rounded-xl border text-left flex flex-col justify-between transition-all">
+                          <span class="font-black uppercase tracking-wider mb-0.5">Extreme</span>
+                          <span class="text-[8px] text-white/40 leading-relaxed font-light">Max bytes saved, basic resolution.</span>
+                        </button>
+                        <button @click="selectedCompression = 'recommended'" :class="selectedCompression === 'recommended' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="p-3.5 rounded-xl border text-left flex flex-col justify-between transition-all">
+                          <span class="font-black uppercase tracking-wider mb-0.5">Recommended</span>
+                          <span class="text-[8px] text-white/40 leading-relaxed font-light">Excellent balance. High fidelity.</span>
+                        </button>
+                        <button @click="selectedCompression = 'low'" :class="selectedCompression === 'low' ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 text-white' : 'border-white/5 bg-white/5 text-white/50'" class="p-3.5 rounded-xl border text-left flex flex-col justify-between transition-all">
+                          <span class="font-black uppercase tracking-wider mb-0.5">Low</span>
+                          <span class="text-[8px] text-white/40 leading-relaxed font-light">Maximum visual resolution.</span>
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+
+                <button 
+                  @click="startProcessingPipeline('Compile PDF', () => {})"
+                  :disabled="uploadedFiles.length === 0"
+                  class="w-full py-3.5 bg-gradient-to-r from-[var(--accent-cyan)] to-blue-600 hover:scale-[1.01] active:scale-[0.99] transition-all text-[10px] font-black uppercase tracking-widest rounded-xl text-white shadow-[0_0_20px_rgba(0,209,255,0.2)] disabled:opacity-20 disabled:pointer-events-none mt-auto flex items-center justify-center gap-2"
+                >
+                  <i data-lucide="check" class="w-4 h-4"></i> Compile PDF Dossier
+                </button>
+              </div>
+            </template>
+
+            <!-- AI PDF generator layout -->
+            <template x-if="activeTool === 'ai'">
+              <div class="space-y-6 flex-1 flex flex-col">
+                <div class="space-y-2">
+                  <label class="text-[9px] font-black uppercase tracking-widest text-white/40">Core Topic & Details</label>
+                  <textarea 
+                    x-model="aiTopic"
+                    placeholder="Describe the report or project details you want OMNIAI to draft... (e.g. 'ATS audit specs for local UPI checkout networks')"
+                    class="w-full h-28 bg-black/40 border border-white/5 rounded-2xl p-4 text-xs text-white placeholder-white/20 focus:outline-none focus:border-[var(--accent-cyan)]/50 transition-all resize-none leading-relaxed"
+                  ></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 text-[9px]">
+                  <div class="space-y-1.5">
+                    <label class="font-black uppercase tracking-widest text-white/40">Document Category</label>
+                    <select x-model="aiDocType" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 focus:outline-none text-white focus:border-[var(--accent-cyan)]/50 cursor-pointer font-black uppercase text-[9px]">
+                      <option value="business_report" class="bg-[#030014] text-white">Business Report</option>
+                      <option value="research_paper" class="bg-[#030014] text-white">Research Paper</option>
+                      <option value="study_notes" class="bg-[#030014] text-white">AI Study Notes</option>
+                      <option value="documentation" class="bg-[#030014] text-white">Project Specs</option>
+                    </select>
+                  </div>
+                  <div class="space-y-1.5">
+                    <label class="font-black uppercase tracking-widest text-white/40">Model Tone</label>
+                    <select x-model="aiTone" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 focus:outline-none text-white focus:border-[var(--accent-cyan)]/50 cursor-pointer font-black uppercase text-[9px]">
+                      <option value="technical" class="bg-[#030014] text-white">Technical Core</option>
+                      <option value="formal" class="bg-[#030014] text-white">Formal Executive</option>
+                      <option value="futuristic" class="bg-[#030014] text-white">Futuristic Synth</option>
+                    </select>
+                  </div>
+                  <div class="space-y-1.5">
+                    <label class="font-black uppercase tracking-widest text-white/40">Document Length</label>
+                    <select x-model="aiLength" class="w-full bg-black/40 border border-white/5 rounded-xl p-3 focus:outline-none text-white focus:border-[var(--accent-cyan)]/50 cursor-pointer font-black uppercase text-[9px]">
+                      <option value="1-3" class="bg-[#030014] text-white">1 - 3 Pages</option>
+                      <option value="4-7" class="bg-[#030014] text-white">4 - 7 Pages</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button 
+                  @click="executeAIGeneration"
+                  :disabled="!aiTopic.trim()"
+                  class="w-full py-3.5 bg-gradient-to-r from-[var(--accent-cyan)] to-blue-600 hover:scale-[1.01] active:scale-[0.99] transition-all text-[10px] font-black uppercase tracking-widest rounded-xl text-white shadow-[0_0_20px_rgba(0,209,255,0.2)] disabled:opacity-20 disabled:pointer-events-none mt-auto flex items-center justify-center gap-2"
+                >
+                  <i data-lucide="sparkles" class="w-4 h-4"></i> Synthesize Intelligent PDF
+                </button>
+              </div>
+            </template>
+
+            <!-- Resume builder layout -->
+            <template x-if="activeTool === 'resume'">
+              <div class="space-y-4 flex-1 flex flex-col">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="space-y-1">
+                    <label class="text-[8px] font-black uppercase tracking-widest text-white/40">Full Name</label>
+                    <input type="text" x-model="resumeData.name" class="w-full bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[var(--accent-cyan)]/50 font-bold" />
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-[8px] font-black uppercase tracking-widest text-white/40">Target Role</label>
+                    <input type="text" x-model="resumeData.title" class="w-full bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[var(--accent-cyan)]/50" />
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[8px] font-black uppercase tracking-widest text-white/40">Summary</label>
+                  <textarea x-model="resumeData.summary" class="w-full h-16 bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[var(--accent-cyan)]/50 resize-none leading-relaxed"></textarea>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[8px] font-black uppercase tracking-widest text-white/40">Professional Experience</label>
+                  <textarea x-model="resumeData.experience" class="w-full h-24 bg-black/40 border border-white/5 rounded-xl p-2.5 text-[11px] text-white focus:outline-none focus:border-[var(--accent-cyan)]/50 resize-none leading-relaxed font-sans"></textarea>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[8px] font-black uppercase tracking-widest text-white/40">Technical Skills</label>
+                  <input type="text" x-model="resumeData.skills" class="w-full bg-black/40 border border-white/5 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[var(--accent-cyan)]/50" />
+                </div>
+
+                <button 
+                  @click="startProcessingPipeline('Resume PDF', () => {})"
+                  class="w-full py-3.5 bg-gradient-to-r from-[var(--accent-cyan)] to-blue-600 hover:scale-[1.01] transition-all text-[10px] font-black uppercase tracking-widest rounded-xl text-white shadow-[0_0_20px_rgba(0,209,255,0.2)] flex items-center justify-center gap-2 mt-auto"
+                >
+                  <i data-lucide="user-check" class="w-4 h-4"></i> ATS Resume Compilation
+                </button>
+              </div>
+            </template>
+
+          </div>
+        </template>
+
+      </main>
+
+      <!-- ── Right Column: PDF Preview Workspace ── -->
+      <aside class="w-full md:w-96 border-t md:border-t-0 md:border-l border-white/5 flex flex-col bg-black/20 backdrop-blur-3xl shrink-0 p-6 lg:p-8 space-y-6 h-[400px] md:h-full overflow-y-auto no-scrollbar">
+        <div class="flex items-center justify-between border-b border-white/5 pb-4">
+          <h3 class="text-xs font-black uppercase tracking-widest text-white/80 flex items-center gap-2">
+            <i data-lucide="eye" class="w-4 h-4 text-[var(--accent-cyan)]"></i> Document Preview
+          </h3>
+          
+          <div class="flex gap-1 items-center bg-white/5 p-1 rounded-lg border border-white/10 text-[9px] font-bold">
+            <button @click="zoomLevel = Math.max(50, zoomLevel - 25)" class="p-1 hover:bg-white/5 rounded" title="Zoom Out"><i data-lucide="zoom-out" class="w-3 h-3"></i></button>
+            <span class="px-1 font-mono text-[8px]" x-text="zoomLevel + '%'"></span>
+            <button @click="zoomLevel = Math.min(200, zoomLevel + 25)" class="p-1 hover:bg-white/5 rounded" title="Zoom In"><i data-lucide="zoom-in" class="w-3 h-3"></i></button>
+          </div>
+        </div>
+
+        <!-- ── DYNAMIC PREVIEW CANVAS LAYOUT ── -->
+        <div class="flex-1 flex items-center justify-center min-h-[220px] bg-black/40 border border-white/5 rounded-2xl p-4 overflow-hidden relative shadow-inner">
+          
+          <div class="transition-all duration-300 w-full" :style="'transform: scale(' + (zoomLevel/100) + '); transform-origin: center center;'">
+            
+            <div class="bg-white text-slate-800 p-6 shadow-2xl rounded-sm aspect-[1/1.41] w-full max-w-[280px] mx-auto text-[7px] leading-normal flex flex-col justify-between selection:bg-slate-200" style="font-family: Arial, sans-serif;">
+              
+              <!-- Preview layout switcher -->
+              <div>
+                
+                <!-- 1. AI PDF Layout -->
+                <template x-if="activeTool === 'ai'">
+                  <div class="space-y-4 font-sans text-slate-700">
+                    <div class="border-b border-slate-200 pb-2 flex justify-between items-center text-[5px] text-slate-400 font-bold uppercase tracking-widest">
+                      <span>OMNIAI NEURAL ARCHITECT</span>
+                      <span>SECURE CLASSIFIED</span>
+                    </div>
+                    
+                    <template x-if="generatedDocContent">
+                      <div class="space-y-3">
+                        <div class="text-[9px] font-extrabold tracking-tight text-slate-900 leading-tight" x-text="aiTopic.toUpperCase()"></div>
+                        <div class="text-[6px] text-indigo-600 font-black uppercase tracking-wider">CLASS: BUSINESS REPORT | TONE: TECHNICAL</div>
+                        <div class="h-px bg-slate-100 my-1"></div>
+                        <p class="text-[6px] leading-relaxed text-slate-500 font-medium">OMNIAI has synthesized the outlines for the proposed topic. Operational density scaling yields maximum capability sync metrics.</p>
+                        
+                        <div class="space-y-1.5 pt-2">
+                          <div class="font-extrabold text-[7px] text-slate-800 uppercase tracking-wider">1. Architecture Core</div>
+                          <div class="pl-2 border-l-2 border-indigo-500 space-y-1 text-slate-500 text-[5px]">
+                            <div>* Dynamic multi-modal vector routing nodes.</div>
+                            <div>* Private local cryptographical vault networks.</div>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                    
+                    <template x-if="!generatedDocContent">
+                      <div class="py-12 text-center text-slate-300 space-y-2 flex flex-col items-center">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-slate-200 animate-pulse"></i>
+                        <span class="text-[6px] uppercase tracking-widest font-black text-slate-400">Awaiting AI Prompt Synthesis</span>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+
+                <!-- 2. ATS Resume Layout -->
+                <template x-if="activeTool === 'resume'">
+                  <div class="space-y-3 text-slate-700">
+                    <!-- Header -->
+                    <div class="text-center space-y-1">
+                      <div class="text-[10px] font-black tracking-tight text-slate-900" x-text="resumeData.name"></div>
+                      <div class="text-[6px] text-indigo-600 font-bold uppercase tracking-wider" x-text="resumeData.title"></div>
+                      <div class="text-[5px] text-slate-400">Denver, CO | alex@omniai.io | (303) 555-0199</div>
+                    </div>
+                    
+                    <div class="h-[0.5px] bg-slate-200"></div>
+
+                    <!-- Summary -->
+                    <div class="space-y-1">
+                      <div class="font-bold text-[6.5px] text-slate-900 border-b border-slate-100 pb-0.5 uppercase tracking-wider">Executive Summary</div>
+                      <p class="text-[5px] text-slate-500 leading-normal" x-text="resumeData.summary"></p>
+                    </div>
+
+                    <!-- Experience -->
+                    <div class="space-y-1">
+                      <div class="font-bold text-[6.5px] text-slate-900 border-b border-slate-100 pb-0.5 uppercase tracking-wider">Professional Experience</div>
+                      <div class="space-y-1.5">
+                        <div class="flex justify-between items-baseline text-[5.5px]">
+                          <span class="font-extrabold text-slate-800">Tech Lead & Solutions Architect</span>
+                          <span class="text-slate-400">2024 - PRESENT</span>
+                        </div>
+                        <p class="text-[5px] text-slate-500 leading-relaxed" style="white-space: pre-line;" x-text="resumeData.experience"></p>
+                      </div>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="space-y-1">
+                      <div class="font-bold text-[6.5px] text-slate-900 border-b border-slate-100 pb-0.5 uppercase tracking-wider">Technical Skills</div>
+                      <p class="text-[5px] text-slate-500" x-text="resumeData.skills"></p>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- 3. Image Compile Layout -->
+                <template x-if="activeTool === 'image'">
+                  <div class="space-y-4">
+                    <div class="flex justify-between items-center text-[5px] text-slate-400 font-bold">
+                      <span>OMNIAI IMAGE TO PDF</span>
+                      <span>PAGE <span x-text="activePage"></span> OF <span x-text="uploadedFiles.length || 1"></span></span>
+                    </div>
+                    
+                    <template x-if="uploadedFiles.length > 0">
+                      <div class="space-y-3">
+                        <div class="w-full h-32 rounded-lg overflow-hidden border border-slate-100 bg-slate-50">
+                          <img :src="uploadedFiles[activePage - 1]?.previewUrl || ''" class="w-full h-full object-cover">
+                        </div>
+                        <div class="text-[6px] text-slate-600 font-bold truncate" x-text="uploadedFiles[activePage - 1]?.name"></div>
+                      </div>
+                    </template>
+
+                    <template x-if="uploadedFiles.length === 0">
+                      <div class="py-12 text-center text-slate-300 space-y-2 flex flex-col items-center">
+                        <i data-lucide="file-image" class="w-6 h-6 text-slate-200"></i>
+                        <span class="text-[6px] uppercase tracking-widest font-black text-slate-400">Awaiting Uploads Sandbox</span>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+
+                <!-- 4. Default / General files layout -->
+                <template x-if="!['ai', 'resume', 'image'].includes(activeTool)">
+                  <div class="py-12 text-center text-slate-300 space-y-3 flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
+                      <i data-lucide="file-text" class="w-5 h-5 text-slate-400"></i>
+                    </div>
+                    <div class="space-y-1">
+                      <h4 class="text-[8px] font-black uppercase text-slate-800">Secure Reader Node</h4>
+                      <p class="text-[5.5px] text-slate-400 max-w-[140px] leading-relaxed">Multi-threaded cryptographic compiler workspace active.</p>
+                    </div>
+                  </div>
+                </template>
+
+              </div>
+
+              <!-- Footer -->
+              <div class="border-t border-slate-100 pt-1.5 flex justify-between items-center text-[4.5px] text-slate-400 font-mono">
+                <span>OMNIAI INTEL v3.5</span>
+                <span>SECURED CRYPT NODE</span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ── Page navigation thumbnails ── -->
+        <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
+          <span>NAV: PAGE <span x-text="activePage"></span> / <span x-text="getPreviewPagesCount()"></span></span>
+          <div class="flex gap-1.5">
+            <button 
+              @click="activePage = Math.max(1, activePage - 1)" 
+              :disabled="activePage === 1"
+              class="p-1 rounded bg-white/5 border border-white/10 hover:bg-white/10 disabled:opacity-20 text-white"
+            >
+              <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+            </button>
+            <button 
+              @click="activePage = Math.min(getPreviewPagesCount(), activePage + 1)" 
+              :disabled="activePage === getPreviewPagesCount()"
+              class="p-1 rounded bg-white/5 border border-white/10 hover:bg-white/10 disabled:opacity-20 text-white"
+            >
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Download & secure share operations ── -->
+        <div class="space-y-3 pt-4 border-t border-white/5 mt-auto">
+          <button 
+            @click="downloadTrigger"
+            class="w-full py-3 bg-gradient-to-r from-[var(--accent-cyan)] to-blue-600 hover:scale-[1.01] transition-all text-[9px] font-black uppercase tracking-widest rounded-xl text-white shadow-[0_0_20px_rgba(0,209,255,0.25)] flex items-center justify-center gap-2"
+          >
+            <i data-lucide="download" class="w-3.5 h-3.5 animate-bounce"></i> Download Generated PDF
+          </button>
+          <div class="grid grid-cols-2 gap-3">
+            <button 
+              @click="showShareModal = true"
+              class="py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-[8px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5"
+            >
+              <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Share Node
+            </button>
+            <button 
+              @click="startProcessingPipeline('Cloud Export', () => { alert('Document synchronized securely with OMNIAI Cloud Vault.'); })"
+              class="py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-[8px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5"
+            >
+              <i data-lucide="database" class="w-3.5 h-3.5"></i> Cloud Sync
+            </button>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer class="h-12 border-t border-white/5 flex items-center justify-between px-6 bg-black/40 backdrop-blur-3xl z-40 relative">
+    <div class="text-[9px] font-mono text-white/30 uppercase tracking-widest">
+      OMNIAI INTEL OS // SECURE UPI SYNC CORE
+    </div>
+    <div class="text-[9px] font-mono text-[var(--accent-cyan)] font-black uppercase tracking-widest">
+      SYSTEM STABLE
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
