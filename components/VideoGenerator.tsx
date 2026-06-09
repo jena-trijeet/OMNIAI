@@ -534,22 +534,22 @@ export function VideoGenerator() {
     setGenerationProgress(5);
     setGenerationStage("Initializing Temporal Grid...");
 
-    let generatedImageUrl = "";
+    let generatedVideoUrl = "";
     
-    // Start generating image asynchronously from neural synthesis api node
+    // Start generating video asynchronously from our new video API
     const apiCallPromise = (async () => {
       try {
-        if (!prompt.trim()) return; // Image upload animation mode doesn't need generation
-
+        if (!prompt.trim()) return; // Image upload animation mode doesn't need generation if just using uploaded file
+        
         const activePreset = STYLE_PRESETS.find(p => p.id === selectedStyle) || STYLE_PRESETS[0];
         const body = {
           prompt: prompt,
           style: activePreset.name,
           aspectRatio: selectedRatio,
-          resolution: 'HD'
+          duration: selectedDuration
         };
         
-        const res = await fetch('/api/generate-image', {
+        const res = await fetch('/api/generate-video', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
@@ -557,8 +557,8 @@ export function VideoGenerator() {
 
         if (res.ok) {
           const data = await res.json();
-          if (data.imageUrl) {
-            generatedImageUrl = data.imageUrl;
+          if (data.videoUrl) {
+            generatedVideoUrl = data.videoUrl;
           }
         }
       } catch (err) {
@@ -578,19 +578,20 @@ export function VideoGenerator() {
       setGenerationStage("Interpolating Temporal Frame Matrices...");
     }, 1700);
 
-    // Stage 3: Upscaling
+    // Stage 3: Rendering (wait indefinitely here until API resolves)
     setTimeout(() => {
       setGenerationProgress(80);
-      setGenerationStage("Running High-Dynamic-Range Contrast Tuning...");
+      setGenerationStage("Waiting for Cloud Rendering Engine...");
     }, 2800);
 
     // Stage 4: Compile & Play
-    setTimeout(async () => {
+    // We launch this immediately, but it awaits the API
+    (async () => {
       // Wait for the apiCallPromise to finish
       await apiCallPromise;
 
       const activePreset = STYLE_PRESETS.find(p => p.id === selectedStyle) || STYLE_PRESETS[0];
-      const finalVideoUrl = generatedImageUrl || uploadedImage || getDynamicVideoUrl(prompt, selectedStyle);
+      const finalVideoUrl = generatedVideoUrl || uploadedImage || getDynamicVideoUrl(prompt, selectedStyle);
       const videoTitle = prompt.trim() 
         ? prompt.substring(0, 30) + (prompt.length > 30 ? '...' : '')
         : `Animated: ${imageName.substring(0, 20)}`;
@@ -645,8 +646,7 @@ export function VideoGenerator() {
           videoRef.current.play().catch(e => console.warn("Auto-play error", e));
         }
       }, 100);
-
-    }, 3800);
+    })();
   };
 
   const handleToggleFavorite = (id: string, e: React.MouseEvent) => {
